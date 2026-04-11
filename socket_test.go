@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"unsafe"
 )
 
 // fakeSWUpdate is a minimal SWUpdate daemon simulator that listens on a Unix
@@ -146,9 +145,8 @@ func TestInstallLocalWithReader(t *testing.T) {
 		t.Errorf("source = %d, want %d (SourceLocal)", source, SourceLocal)
 	}
 
-	// offsets after Len depend on sizeof(sizeT): 4 on 32-bit, 8 on 64-bit.
-	sizeTLen := int(unsafe.Sizeof(sizeT(0)))
-	infoOff := 12 + sizeTLen
+	// offsets after DryRun depend on padding and sizeof(sizeT).
+	infoOff := 12 + paddingAfterDryRun + sizeOfSizeT
 	swSetOff := infoOff + infoFieldSize
 	runModeOff := swSetOff + softwareSetFieldSize
 
@@ -265,9 +263,10 @@ func TestRequestMarshalSize(t *testing.T) {
 	}
 	data := req.marshal()
 
-	// 4 (apiversion) + 4 (source) + 4 (cmd) + sizeof(sizeT) (len) +
-	// 512 (info) + 256 (software_set) + 256 (running_mode) + 4 (disable_store)
-	want := 1040 + int(unsafe.Sizeof(sizeT(0)))
+	// 4 (apiversion) + 4 (source) + 4 (cmd) + paddingAfterDryRun +
+	// sizeOfSizeT (len) + 512 (info) + 256 (software_set) + 256 (running_mode) +
+	// 1 (disable_store) + paddingAfterBool
+	want := 1037 + paddingAfterDryRun + sizeOfSizeT + paddingAfterBool
 	if len(data) != want {
 		t.Errorf("Marshal() size = %d, want %d", len(data), want)
 	}

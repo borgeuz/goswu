@@ -5,7 +5,10 @@ package goswu
 import "encoding/binary"
 
 const (
-	ipcMsgDataSize int = 3096
+	sizeOfSizeT        = 4
+	paddingAfterDryRun = 0
+	paddingAfterBool   = 3
+	ipcMsgDataSize     = 3096
 )
 
 type sizeT uint32

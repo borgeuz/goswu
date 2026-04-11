@@ -3,7 +3,6 @@ package goswu
 import (
 	"encoding/binary"
 	"strings"
-	"unsafe"
 )
 
 // Fixed-size field lengths matching the SWUpdate C struct swupdate_request.
@@ -32,29 +31,26 @@ type Request struct {
 //
 //	apiversion      uint32     (4 bytes)
 //	source          int32      (4 bytes)
-//	cmd             int32      (4 bytes)
+//	cmd             int32      (4 bytes + 4 bytes padding on 64-bit)
 //	cmdlen          sizeT      (4 bytes on 32-bit, 8 bytes on 64-bit)
 //	info            char[512]  (512 bytes, zero-padded)
 //	software_set    char[256]  (256 bytes, zero-padded)
 //	running_mode    char[256]  (256 bytes, zero-padded)
-//	disable_store   uint32     (4 bytes)
+//	disable_store   uint32     (1 byte + 3 bytes padding on 32-bit, 7 bytes padding on 64-bit)
 //	                           ──────────
 //	total                      1044 bytes on 32-bit, 1056 bytes on 64-bit
 func (r *Request) marshal() []byte {
-	// 1040 bytes for the fixed fields, plus the size of sizeT
-	buf := make([]byte, 0, 1040+int(unsafe.Sizeof(sizeT(0))))
+	buf := make([]byte, 0, 1037+paddingAfterDryRun+sizeOfSizeT+paddingAfterBool)
 	buf = binary.NativeEndian.AppendUint32(buf, r.APIVersion)
 	buf = binary.NativeEndian.AppendUint32(buf, uint32(r.Source))
 	buf = binary.NativeEndian.AppendUint32(buf, uint32(r.DryRun))
+	buf = append(buf, make([]byte, paddingAfterDryRun)...)
 	buf = appendSizeT(buf, r.Len)
 	buf = append(buf, fixedString(r.Info, infoFieldSize)...)
 	buf = append(buf, fixedString(r.SoftwareSet, softwareSetFieldSize)...)
 	buf = append(buf, fixedString(r.RunningMode, runningModeFieldSize)...)
-	if r.DisableStoreSWU {
-		buf = binary.NativeEndian.AppendUint32(buf, 1)
-	} else {
-		buf = binary.NativeEndian.AppendUint32(buf, 0)
-	}
+	buf = append(buf, boolToByte(r.DisableStoreSWU))
+	buf = append(buf, make([]byte, paddingAfterBool)...)
 	return buf
 }
 
@@ -64,6 +60,13 @@ func fixedString(s string, size int) []byte {
 	b := make([]byte, size)
 	copy(b, s)
 	return b
+}
+
+func boolToByte(b bool) byte {
+	if b {
+		return 1
+	}
+	return 0
 }
 
 // Selection identifies which software set and running mode to install.
