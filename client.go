@@ -39,7 +39,7 @@ func (c *Client) Progress() (*ProgressMsg, error) {
 
 func (c *Client) buildRequest(source SourceType) *Request {
 	req := &Request{
-		APIVersion: SWUpdateAPIVersion,
+		APIVersion: swUpdateAPIVersion,
 		Source:     source,
 		DryRun:     RunDefault,
 	}

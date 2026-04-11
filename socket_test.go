@@ -140,8 +140,8 @@ func TestInstallLocalWithReader(t *testing.T) {
 	// Verify request fields in the payload.
 	data := fake.receivedMsg.data
 	apiVersion := binary.NativeEndian.Uint32(data[0:4])
-	if apiVersion != SWUpdateAPIVersion {
-		t.Errorf("api_version = %d, want %d", apiVersion, SWUpdateAPIVersion)
+	if apiVersion != swUpdateAPIVersion {
+		t.Errorf("api_version = %d, want %d", apiVersion, swUpdateAPIVersion)
 	}
 
 	source := SourceType(binary.NativeEndian.Uint32(data[4:8]))
@@ -255,13 +255,13 @@ func TestInstallConnectionRefused(t *testing.T) {
 
 func TestRequestMarshalSize(t *testing.T) {
 	req := &Request{
-		APIVersion:  SWUpdateAPIVersion,
+		APIVersion:  swUpdateAPIVersion,
 		Source:      SourceLocal,
 		DryRun:      RunDefault,
 		SoftwareSet: "stable",
 		RunningMode: "main",
 	}
-	data := req.Marshal()
+	data := req.marshal()
 	if len(data) != requestSize {
 		t.Errorf("Marshal() size = %d, want %d", len(data), requestSize)
 	}

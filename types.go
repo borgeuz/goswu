@@ -1,7 +1,7 @@
 package goswu
 
 // SWUpdateAPIVersion is the IPC API version supported by this client.
-const SWUpdateAPIVersion uint32 = 1
+const swUpdateAPIVersion uint32 = 1
 
 // ipcMagic is the magic number used in the SWUpdate IPC protocol header.
 const ipcMagic int32 = 0x14052001

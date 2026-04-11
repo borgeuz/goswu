@@ -64,8 +64,8 @@ type ProgressMsg struct {
 	Info       [2048]byte
 }
 
-// Unmarshal reads exactly 2408 bytes from r and decodes them into the struct.
-func (m *ProgressMsg) Unmarshal(r io.Reader) error {
+// unmarshal reads exactly 2408 bytes from r and decodes them into the struct.
+func (m *ProgressMsg) unmarshal(r io.Reader) error {
 	var msgBuf [2408]byte
 	if _, err := io.ReadFull(r, msgBuf[:]); err != nil {
 		return fmt.Errorf("goswu: reading progress message: %w", err)

@@ -39,7 +39,7 @@ type Request struct {
 //	disable_store   uint32     (4 bytes)
 //	                           ──────────
 //	total                      1044 bytes
-func (r *Request) Marshal() []byte {
+func (r *Request) marshal() []byte {
 	buf := make([]byte, 0, 1044)
 	buf = binary.NativeEndian.AppendUint32(buf, r.APIVersion)
 	buf = binary.NativeEndian.AppendUint32(buf, uint32(r.Source))

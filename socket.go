@@ -76,7 +76,7 @@ func (s *Socket) Install(req *Request) error {
 	msg := ipcMsg{
 		magic: ipcMagic,
 		typ:   msgReqInstall,
-		data:  req.Marshal(),
+		data:  req.marshal(),
 	}
 
 	if _, err := conn.Write(msg.Marshal()); err != nil {
@@ -139,7 +139,7 @@ func (s *Socket) ReadProgress() (*ProgressMsg, error) {
 	defer conn.Close()
 
 	var msg ProgressMsg
-	if err := msg.Unmarshal(conn); err != nil {
+	if err := msg.unmarshal(conn); err != nil {
 		return nil, err
 	}
 	return &msg, nil
