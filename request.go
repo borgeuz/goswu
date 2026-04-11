@@ -3,6 +3,7 @@ package goswu
 import (
 	"encoding/binary"
 	"strings"
+	"unsafe"
 )
 
 // Fixed-size field lengths matching the SWUpdate C struct swupdate_request.
@@ -18,7 +19,7 @@ type Request struct {
 	APIVersion      uint32
 	Source          SourceType
 	DryRun          RunType
-	Len             int32
+	Len             sizeT
 	Info            string
 	SoftwareSet     string
 	RunningMode     string
@@ -32,19 +33,20 @@ type Request struct {
 //	apiversion      uint32     (4 bytes)
 //	source          int32      (4 bytes)
 //	cmd             int32      (4 bytes)
-//	cmdlen          int32      (4 bytes)
+//	cmdlen          sizeT      (4 bytes on 32-bit, 8 bytes on 64-bit)
 //	info            char[512]  (512 bytes, zero-padded)
 //	software_set    char[256]  (256 bytes, zero-padded)
 //	running_mode    char[256]  (256 bytes, zero-padded)
 //	disable_store   uint32     (4 bytes)
 //	                           ──────────
-//	total                      1044 bytes
+//	total                      1044 bytes on 32-bit, 1056 bytes on 64-bit
 func (r *Request) marshal() []byte {
-	buf := make([]byte, 0, 1044)
+	// 1040 bytes for the fixed fields, plus the size of sizeT
+	buf := make([]byte, 0, 1040+int(unsafe.Sizeof(sizeT(0))))
 	buf = binary.NativeEndian.AppendUint32(buf, r.APIVersion)
 	buf = binary.NativeEndian.AppendUint32(buf, uint32(r.Source))
 	buf = binary.NativeEndian.AppendUint32(buf, uint32(r.DryRun))
-	buf = binary.NativeEndian.AppendUint32(buf, uint32(r.Len))
+	buf = appendSizeT(buf, r.Len)
 	buf = append(buf, fixedString(r.Info, infoFieldSize)...)
 	buf = append(buf, fixedString(r.SoftwareSet, softwareSetFieldSize)...)
 	buf = append(buf, fixedString(r.RunningMode, runningModeFieldSize)...)

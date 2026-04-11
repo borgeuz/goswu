@@ -9,9 +9,10 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"unsafe"
 )
 
-const requestSize = 1044
+var requestSize = 1040 + int(unsafe.Sizeof(sizeT(0)))
 
 // fakeSWUpdate is a minimal SWUpdate daemon simulator that listens on a Unix
 // socket and speaks the IPC protocol. Tests configure its behavior through
@@ -149,12 +150,17 @@ func TestInstallLocalWithReader(t *testing.T) {
 		t.Errorf("source = %d, want %d (SourceLocal)", source, SourceLocal)
 	}
 
-	// info(512) starts at offset 16, software_set(256) at 528, running_mode(256) at 784.
-	softwareSet := string(bytes.TrimRight(data[528:528+softwareSetFieldSize], "\x00"))
+	// offsets after Len depend on sizeof(sizeT): 4 on 32-bit, 8 on 64-bit.
+	sizeTLen := int(unsafe.Sizeof(sizeT(0)))
+	infoOff := 12 + sizeTLen
+	swSetOff := infoOff + infoFieldSize
+	runModeOff := swSetOff + softwareSetFieldSize
+
+	softwareSet := string(bytes.TrimRight(data[swSetOff:swSetOff+softwareSetFieldSize], "\x00"))
 	if softwareSet != "stable" {
 		t.Errorf("software_set = %q, want %q", softwareSet, "stable")
 	}
-	runningMode := string(bytes.TrimRight(data[784:784+runningModeFieldSize], "\x00"))
+	runningMode := string(bytes.TrimRight(data[runModeOff:runModeOff+runningModeFieldSize], "\x00"))
 	if runningMode != "main" {
 		t.Errorf("running_mode = %q, want %q", runningMode, "main")
 	}
@@ -262,8 +268,12 @@ func TestRequestMarshalSize(t *testing.T) {
 		RunningMode: "main",
 	}
 	data := req.marshal()
-	if len(data) != requestSize {
-		t.Errorf("Marshal() size = %d, want %d", len(data), requestSize)
+
+	// 4 (apiversion) + 4 (source) + 4 (cmd) + sizeof(sizeT) (len) +
+	// 512 (info) + 256 (software_set) + 256 (running_mode) + 4 (disable_store)
+	want := 1040 + int(unsafe.Sizeof(sizeT(0)))
+	if len(data) != want {
+		t.Errorf("Marshal() size = %d, want %d", len(data), want)
 	}
 }
 
