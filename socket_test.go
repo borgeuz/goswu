@@ -12,8 +12,6 @@ import (
 	"unsafe"
 )
 
-var requestSize = 1040 + int(unsafe.Sizeof(sizeT(0)))
-
 // fakeSWUpdate is a minimal SWUpdate daemon simulator that listens on a Unix
 // socket and speaks the IPC protocol. Tests configure its behavior through
 // the exported fields before calling start().
@@ -75,12 +73,10 @@ func (f *fakeSWUpdate) start(t *testing.T) {
 
 		// Read the request payload (fixed size for REQ_INSTALL).
 		if f.receivedMsg.typ == msgReqInstall {
-			payload := make([]byte, requestSize)
-			if _, err := io.ReadFull(conn, payload); err != nil {
+			if _, err := io.ReadFull(conn, f.receivedMsg.data[:]); err != nil {
 				f.err = err
 				return
 			}
-			f.receivedMsg.data = payload
 		}
 
 		// Send response.
@@ -310,11 +306,10 @@ func TestParseSelection(t *testing.T) {
 }
 
 func TestIpcMsgMarshalRoundtrip(t *testing.T) {
-	original := ipcMsg{
-		magic: ipcMagic,
-		typ:   msgReqInstall,
-		data:  []byte("test-payload"),
-	}
+	var original ipcMsg
+	original.magic = ipcMagic
+	original.typ = msgReqInstall
+	copy(original.data[:], "test-payload")
 	wire := original.Marshal()
 
 	magic := int32(binary.NativeEndian.Uint32(wire[:4]))

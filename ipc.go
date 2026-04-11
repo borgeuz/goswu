@@ -24,15 +24,15 @@ const (
 type ipcMsg struct {
 	magic int32
 	typ   msgType
-	data  []byte
+	data  [ipcMsgDataSize]byte
 }
 
 // Marshal encodes the message into its binary format.
 func (m *ipcMsg) Marshal() []byte {
-	buf := make([]byte, 8+len(m.data))
+	buf := make([]byte, 8+ipcMsgDataSize)
 	binary.NativeEndian.PutUint32(buf[:4], uint32(m.magic))
 	binary.NativeEndian.PutUint32(buf[4:8], uint32(m.typ))
-	copy(buf[8:], m.data)
+	copy(buf[8:], m.data[:])
 	return buf
 }
 

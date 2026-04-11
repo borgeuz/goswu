@@ -76,8 +76,8 @@ func (s *Socket) Install(req *Request) error {
 	msg := ipcMsg{
 		magic: ipcMagic,
 		typ:   msgReqInstall,
-		data:  req.marshal(),
 	}
+	copy(msg.data[:], req.marshal())
 
 	if _, err := conn.Write(msg.Marshal()); err != nil {
 		return fmt.Errorf("goswu: sending install request: %w", err)
