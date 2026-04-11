@@ -7,7 +7,7 @@ It speaks the SWUpdate IPC protocol over Unix domain sockets, letting you trigge
 ## Install
 
 ```
-go get github.com/Borgeouzz/goswu
+go get github.com/borgeuz/goswu
 ```
 
 ## Usage
