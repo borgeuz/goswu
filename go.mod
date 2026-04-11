@@ -1,3 +1,3 @@
-module github.com/Borgeouzz/goswu
+module github.com/borgeuz/goswu
 
 go 1.25.0
