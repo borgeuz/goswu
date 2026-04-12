@@ -58,6 +58,25 @@ fmt.Printf("status=%d step=%d/%d percent=%d%%\n",
     progress.Status, progress.CurStep, progress.NSteps, progress.CurPercent)
 ```
 
+### Streaming progress
+
+```go
+sock := goswu.NewSocket()
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+
+ch, err := sock.StreamProgress(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+for p := range ch {
+    fmt.Printf("status=%d step=%d/%d percent=%d%%\n",
+        p.Status, p.CurStep, p.NSteps, p.CurPercent)
+}
+```
+
+The channel closes when the update reaches `StatusSuccess`/`StatusFailure`, the connection drops, or the context is cancelled.
+
 ### Custom socket paths
 
 ```go
