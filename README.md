@@ -1,5 +1,7 @@
 # goswu
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/borgeuz/goswu.svg)](https://pkg.go.dev/github.com/borgeuz/goswu)
+
 A Go client library for [SWUpdate](https://swupdate.org/), the software update framework for embedded Linux.
 
 It speaks the SWUpdate IPC protocol over Unix domain sockets, letting you trigger updates and monitor progress from Go code running on the same device.
