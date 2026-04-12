@@ -36,7 +36,7 @@ type Request struct {
 //	info            char[512]  (512 bytes, zero-padded)
 //	software_set    char[256]  (256 bytes, zero-padded)
 //	running_mode    char[256]  (256 bytes, zero-padded)
-//	disable_store   uint32     (1 byte + 3 bytes padding on 32-bit, 7 bytes padding on 64-bit)
+//	disable_store   bool       (1 byte + 3 bytes padding on 32-bit, 7 bytes padding on 64-bit)
 //	                           ──────────
 //	total                      1044 bytes on 32-bit, 1056 bytes on 64-bit
 func (r *Request) marshal() []byte {

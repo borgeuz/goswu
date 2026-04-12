@@ -10,13 +10,22 @@ import (
 type msgType int32
 
 const (
-	msgReqInstall msgType = iota // Request a new installation.
-	msgACK                       // Positive acknowledgement.
-	msgNACK                      // Negative acknowledgement.
-	msgGetStatus                 // Query the daemon status.
-	msgPostUpdate                // Post-update notification.
-	msgSubprocess                // SWUpdate subprocess command.
-	msgSetAESKey                 // Set an AES decryption key.
+	msgReqInstall       msgType = iota // Request a new installation.
+	msgACK                             // Positive acknowledgement.
+	msgNACK                            // Negative acknowledgement.
+	msgGetStatus                       // Query the daemon status.
+	msgPostUpdate                      // Post-update notification.
+	msgSubprocess                      // SWUpdate subprocess command.
+	msgSetAESKey                       // Set an AES decryption key.
+	msgSetUpdateState                  // Set the update state.
+	msgGetUpdateState                  // Get the update state.
+	msgReqInstallExt                   // Request a new installation with extended options.
+	msgSetVersionsRange                // Set the versions range.
+	msgNotifyStream                    // Notify a stream.
+	msgGetHwRevision                   // Get the hardware revision.
+	msgSetSwupdateVars                 // Set SWUpdate variables.
+	msgGetSwupdateVars                 // Get SWUpdate variables.
+	msgSetDeltaUrl                     // Set the delta URL.
 )
 
 // ipcMsg represents the message sento over IPC socket to communicate with SWUpdate,

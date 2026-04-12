@@ -75,7 +75,7 @@ func (s *Socket) Install(req *Request) error {
 
 	msg := ipcMsg{
 		magic: ipcMagic,
-		typ:   msgReqInstall,
+		typ:   msgReqInstallExt,
 	}
 	copy(msg.data[:], req.marshal())
 

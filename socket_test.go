@@ -70,8 +70,8 @@ func (f *fakeSWUpdate) start(t *testing.T) {
 		f.receivedMsg.magic = int32(binary.NativeEndian.Uint32(header[:4]))
 		f.receivedMsg.typ = msgType(binary.NativeEndian.Uint32(header[4:8]))
 
-		// Read the request payload (fixed size for REQ_INSTALL).
-		if f.receivedMsg.typ == msgReqInstall {
+		// Read the request payload (fixed size for REQ_INSTALL_EXT).
+		if f.receivedMsg.typ == msgReqInstallExt {
 			if _, err := io.ReadFull(conn, f.receivedMsg.data[:]); err != nil {
 				f.err = err
 				return
@@ -129,8 +129,8 @@ func TestInstallLocalWithReader(t *testing.T) {
 	if fake.receivedMsg.magic != ipcMagic {
 		t.Errorf("magic = %#x, want %#x", fake.receivedMsg.magic, ipcMagic)
 	}
-	if fake.receivedMsg.typ != msgReqInstall {
-		t.Errorf("msg type = %d, want %d (reqInstall)", fake.receivedMsg.typ, msgReqInstall)
+	if fake.receivedMsg.typ != msgReqInstallExt {
+		t.Errorf("msg type = %d, want %d (reqInstallExt)", fake.receivedMsg.typ, msgReqInstallExt)
 	}
 
 	// Verify request fields in the payload.
