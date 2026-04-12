@@ -1,6 +1,7 @@
 package goswu
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -143,4 +144,36 @@ func (s *Socket) ReadProgress() (*ProgressMsg, error) {
 		return nil, err
 	}
 	return &msg, nil
+}
+
+// StreamProgress connects to the progress socket and streams [ProgressMsg]s to the channel.
+// The channel is closed when the context is done or when the connection is closed.
+func (s *Socket) StreamProgress(ctx context.Context) (<-chan *ProgressMsg, error) {
+	conn, err := net.Dial("unix", s.progressPath)
+	if err != nil {
+		return nil, fmt.Errorf("goswu: connecting to progress socket: %w", err)
+	}
+
+	ch := make(chan *ProgressMsg)
+	go func() {
+		defer close(ch)
+		defer conn.Close()
+		for {
+			var msg ProgressMsg
+			if err := msg.unmarshal(conn); err != nil {
+				return
+			}
+
+			select {
+			case ch <- &msg:
+			case <-ctx.Done():
+				return
+			}
+
+			if msg.Status == StatusSuccess || msg.Status == StatusFailure {
+				return
+			}
+		}
+	}()
+	return ch, nil
 }
