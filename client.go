@@ -1,5 +1,7 @@
 package goswu
 
+import "context"
+
 // Client wraps a [Transport] and provides a simple API to trigger
 // installations and read progress from SWUpdate.
 type Client struct {
@@ -35,6 +37,11 @@ func (c *Client) Install(source SourceType) error {
 // Returns a [ProgressMsg] with status, percentage, current step, etc.
 func (c *Client) Progress() (*ProgressMsg, error) {
 	return c.transport.ReadProgress()
+}
+
+// StreamProgress streams the progress of the update.
+func (c *Client) StreamProgress(ctx context.Context) (<-chan *ProgressMsg, error) {
+	return c.transport.StreamProgress(ctx)
 }
 
 func (c *Client) buildRequest(source SourceType) *Request {
