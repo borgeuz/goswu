@@ -3,11 +3,10 @@ package goswu
 import "errors"
 
 var (
-	// ErrUpdateInProgress is returned when an installation is requested
-	// but SWUpdate is already processing another update.
-	ErrUpdateInProgress = errors.New("goswu: update already in progress")
+	// ErrNack is returned when SWUpdate sends a NACK response.
+	ErrNack = errors.New("goswu: nack received from swupdate")
 
-	// ErrUnexpectedResponse is returned when the IPC response type
-	// does not match the expected value.
-	ErrUnexpectedResponse = errors.New("goswu: unexpected ipc response")
+	// ErrUnexpectedResponse is returned when the response
+	// does not match the expected type or cannot be unmarshalled.
+	ErrUnexpectedResponse = errors.New("goswu: unexpected response from swupdate")
 )

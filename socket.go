@@ -92,7 +92,7 @@ func (s *Socket) Install(req *Request) error {
 
 	switch resp.typ {
 	case msgNACK:
-		return ErrUpdateInProgress
+		return ErrNack
 	case msgACK:
 		// ok
 	default:

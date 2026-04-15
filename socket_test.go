@@ -203,8 +203,8 @@ func TestInstallNACK(t *testing.T) {
 	client := NewClient(sock, nil)
 
 	err := client.Install(SourceLocal)
-	if !errors.Is(err, ErrUpdateInProgress) {
-		t.Errorf("Install() error = %v, want %v", err, ErrUpdateInProgress)
+	if !errors.Is(err, ErrNack) {
+		t.Errorf("Install() error = %v, want %v", err, ErrNack)
 	}
 }
 
