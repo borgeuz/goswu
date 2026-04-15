@@ -93,19 +93,30 @@ func (s *Socket) Install(req *Request) error {
 		return err
 	}
 
-	switch resp.typ {
-	case msgNACK:
-		return ErrNack
-	case msgACK:
-		// ok
-	default:
-		return fmt.Errorf("%w: expected ACK, got %d", ErrUnexpectedResponse, resp.typ)
+	if err := s.checkResponse(resp); err != nil {
+		return err
 	}
 
 	if err := s.streamImage(conn); err != nil {
 		return err
 	}
 	return nil
+}
+
+// checkResponse validates the response from SWUpdate.
+// Returns [ErrUnexpectedResponse] if the response is invalid.
+func (s *Socket) checkResponse(res ipcMsg) error {
+	if res.magic != ipcMagic {
+		return fmt.Errorf("%w: socket protocol error", ErrUnexpectedResponse)
+	}
+	switch res.typ {
+	case msgNACK:
+		return ErrNack
+	case msgACK:
+		return nil
+	default:
+		return fmt.Errorf("%w: unexpected response type: %d", ErrUnexpectedResponse, res.typ)
+	}
 }
 
 // streamImage resolves the image source (path or reader) and copies it to the connection.
