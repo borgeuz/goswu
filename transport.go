@@ -1,5 +1,7 @@
 package goswu
 
+import "context"
+
 // Transport is the interface between [Client] and SWUpdate.
 // The only built-in implementation is [Socket]; implement this
 // interface if you need a different communication channel.
@@ -10,4 +12,7 @@ type Transport interface {
 
 	// ReadProgress reads a single [ProgressMsg] from SWUpdate.
 	ReadProgress() (*ProgressMsg, error)
+
+	// StreamProgress streams the progress of the update.
+	StreamProgress(ctx context.Context) (<-chan *ProgressMsg, error)
 }
