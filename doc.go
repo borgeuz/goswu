@@ -9,13 +9,13 @@
 //	sock := goswu.NewSocket(goswu.WithImagePath("/tmp/update.swu"))
 //	client := goswu.NewClient(sock, goswu.ParseSelection("stable,main"))
 //
-//	if err := client.Install(goswu.SourceLocal); err != nil {
+//	if err := client.Install(); err != nil {
 //	    log.Fatal(err)
 //	}
 //
 // # Progress
 //
 // Use [Client.Progress] to read a single progress message, or
-// [Socket.StreamProgress] to receive progress updates on a channel until the
+// [Client.StreamProgress] to receive progress updates on a channel until the
 // update completes.
 package goswu

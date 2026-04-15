@@ -20,7 +20,7 @@ go get github.com/borgeuz/goswu
 sock := goswu.NewSocket(goswu.WithImagePath("/tmp/update.swu"))
 client := goswu.NewClient(sock, goswu.ParseSelection("stable,main"))
 
-if err := client.Install(goswu.SourceLocal); err != nil {
+if err := client.Install(); err != nil {
     log.Fatal(err)
 }
 ```
@@ -37,7 +37,7 @@ defer f.Close()
 sock := goswu.NewSocket(goswu.WithImageReader(f))
 client := goswu.NewClient(sock, nil)
 
-if err := client.Install(goswu.SourceLocal); err != nil {
+if err := client.Install(); err != nil {
     log.Fatal(err)
 }
 ```
@@ -46,7 +46,7 @@ if err := client.Install(goswu.SourceLocal); err != nil {
 
 ```go
 client.SetDryRun(true)
-err := client.Install(goswu.SourceLocal) // simulates the update, no changes written
+err := client.Install() // simulates the update, no changes written
 ```
 
 ### Reading progress
@@ -67,7 +67,7 @@ sock := goswu.NewSocket()
 ctx, cancel := context.WithCancel(context.Background())
 defer cancel()
 
-ch, err := sock.StreamProgress(ctx)
+ch, err := client.StreamProgress(ctx)
 if err != nil {
     log.Fatal(err)
 }
@@ -101,10 +101,11 @@ The client serializes requests and messages matching the C structs from SWUpdate
 ## Project structure
 
 ```
-types.go      -- shared types and constants (Status, RunType, SourceType)
+types.go      -- public enums (Status, RunType, SourceType)
 errors.go     -- sentinel errors
-ipc.go        -- IPC message format and progress_msg deserialization
-request.go    -- Request struct and binary serialization
+ipc.go        -- internal IPC protocol (magic, msgType, ipcMsg)
+progress.go   -- ProgressMsg and its deserialization
+request.go    -- Request struct, binary serialization, Selection
 transport.go  -- Transport interface
 socket.go     -- Unix socket Transport implementation
 client.go     -- high-level Client API

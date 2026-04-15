@@ -19,6 +19,7 @@ const (
 // Socket talks to SWUpdate over local Unix domain sockets.
 // It implements [Transport].
 type Socket struct {
+	sourceType   SourceType
 	controlPath  string
 	progressPath string
 
@@ -55,6 +56,7 @@ func WithImagePath(path string) SocketOption {
 // Defaults to [DefaultControlSocket] and [DefaultProgressSocket].
 func NewSocket(opts ...SocketOption) *Socket {
 	s := &Socket{
+		sourceType:   SourceLocal,
 		controlPath:  DefaultControlSocket,
 		progressPath: DefaultProgressSocket,
 	}
@@ -64,9 +66,9 @@ func NewSocket(opts ...SocketOption) *Socket {
 	return s
 }
 
-// Install sends a REQ_INSTALL to SWUpdate and waits for an ACK.
-// If the source is [SourceLocal], it also streams the firmware image
-// over the same connection. Returns [ErrUpdateInProgress] on NACK.
+// Install sends a REQ_INSTALL to SWUpdate and waits for an ACK,
+// then streams the firmware image over the same connection.
+// Returns [ErrNack] if SWUpdate refuses the request.
 func (s *Socket) Install(req *Request) error {
 	conn, err := net.Dial("unix", s.controlPath)
 	if err != nil {
@@ -74,6 +76,7 @@ func (s *Socket) Install(req *Request) error {
 	}
 	defer conn.Close()
 
+	req.Source = s.sourceType
 	msg := ipcMsg{
 		magic: ipcMagic,
 		typ:   msgReqInstall,
@@ -99,10 +102,8 @@ func (s *Socket) Install(req *Request) error {
 		return fmt.Errorf("%w: expected ACK, got %d", ErrUnexpectedResponse, resp.typ)
 	}
 
-	if req.Source == SourceLocal {
-		if err := s.streamImage(conn); err != nil {
-			return err
-		}
+	if err := s.streamImage(conn); err != nil {
+		return err
 	}
 	return nil
 }

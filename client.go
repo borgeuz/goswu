@@ -28,8 +28,8 @@ func (c *Client) SetDryRun(enabled bool) {
 // Install triggers an update for the given source type. What happens
 // under the hood depends on the transport (e.g. streaming a local .swu
 // file over the socket, or telling SWUpdate to pull from a remote server).
-func (c *Client) Install(source SourceType) error {
-	req := c.buildRequest(source)
+func (c *Client) Install() error {
+	req := c.buildRequest()
 	return c.transport.Install(req)
 }
 
@@ -44,10 +44,9 @@ func (c *Client) StreamProgress(ctx context.Context) (<-chan *ProgressMsg, error
 	return c.transport.StreamProgress(ctx)
 }
 
-func (c *Client) buildRequest(source SourceType) *Request {
+func (c *Client) buildRequest() *Request {
 	req := &Request{
 		APIVersion: swUpdateAPIVersion,
-		Source:     source,
 		DryRun:     RunDefault,
 	}
 

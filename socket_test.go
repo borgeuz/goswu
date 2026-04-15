@@ -71,7 +71,7 @@ func (f *fakeSWUpdate) start(t *testing.T) {
 		f.receivedMsg.typ = msgType(binary.NativeEndian.Uint32(header[4:8]))
 
 		// Read the request payload (fixed size for REQ_INSTALL_EXT).
-		if f.receivedMsg.typ == msgReqInstallExt {
+		if f.receivedMsg.typ == msgReqInstall {
 			if _, err := io.ReadFull(conn, f.receivedMsg.data[:]); err != nil {
 				f.err = err
 				return
@@ -120,7 +120,7 @@ func TestInstallLocalWithReader(t *testing.T) {
 	)
 	client := NewClient(sock, ParseSelection("stable,main"))
 
-	if err := client.Install(SourceLocal); err != nil {
+	if err := client.Install(); err != nil {
 		t.Fatalf("Install() error: %v", err)
 	}
 	fake.wait(t)
@@ -129,8 +129,8 @@ func TestInstallLocalWithReader(t *testing.T) {
 	if fake.receivedMsg.magic != ipcMagic {
 		t.Errorf("magic = %#x, want %#x", fake.receivedMsg.magic, ipcMagic)
 	}
-	if fake.receivedMsg.typ != msgReqInstallExt {
-		t.Errorf("msg type = %d, want %d (reqInstallExt)", fake.receivedMsg.typ, msgReqInstallExt)
+	if fake.receivedMsg.typ != msgReqInstall {
+		t.Errorf("msg type = %d, want %d (reqInstall)", fake.receivedMsg.typ, msgReqInstall)
 	}
 
 	// Verify request fields in the payload.
@@ -181,7 +181,7 @@ func TestInstallLocalWithPath(t *testing.T) {
 	)
 	client := NewClient(sock, nil)
 
-	if err := client.Install(SourceLocal); err != nil {
+	if err := client.Install(); err != nil {
 		t.Fatalf("Install() error: %v", err)
 	}
 	fake.wait(t)
@@ -202,7 +202,7 @@ func TestInstallNACK(t *testing.T) {
 	)
 	client := NewClient(sock, nil)
 
-	err := client.Install(SourceLocal)
+	err := client.Install()
 	if !errors.Is(err, ErrNack) {
 		t.Errorf("Install() error = %v, want %v", err, ErrNack)
 	}
@@ -219,7 +219,7 @@ func TestInstallDryRun(t *testing.T) {
 	client := NewClient(sock, nil)
 	client.SetDryRun(true)
 
-	if err := client.Install(SourceLocal); err != nil {
+	if err := client.Install(); err != nil {
 		t.Fatalf("Install() error: %v", err)
 	}
 	fake.wait(t)
@@ -237,7 +237,7 @@ func TestInstallLocalNoImage(t *testing.T) {
 	sock := NewSocket(WithControlPath(fake.controlPath))
 	client := NewClient(sock, nil)
 
-	err := client.Install(SourceLocal)
+	err := client.Install()
 	if err == nil {
 		t.Fatal("Install() should fail when no image is provided for SourceLocal")
 	}
@@ -247,7 +247,7 @@ func TestInstallConnectionRefused(t *testing.T) {
 	sock := NewSocket(WithControlPath("/tmp/goswu-nonexistent-socket"))
 	client := NewClient(sock, nil)
 
-	err := client.Install(SourceLocal)
+	err := client.Install()
 	if err == nil {
 		t.Fatal("Install() should fail when socket does not exist")
 	}
