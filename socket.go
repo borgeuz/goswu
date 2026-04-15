@@ -1,7 +1,6 @@
 package goswu
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -69,7 +68,6 @@ func NewSocket(opts ...SocketOption) *Socket {
 // If the source is [SourceLocal], it also streams the firmware image
 // over the same connection. Returns [ErrUpdateInProgress] on NACK.
 func (s *Socket) Install(req *Request) error {
-	fmt.Printf("req: %+v\n", req)
 	conn, err := net.Dial("unix", s.controlPath)
 	if err != nil {
 		return fmt.Errorf("failed to connect to control socket: %w", err)
@@ -83,9 +81,6 @@ func (s *Socket) Install(req *Request) error {
 	copy(msg.data[:], req.marshal())
 
 	marshalledMsg := msg.Marshal()
-	fmt.Printf("marshalledMsg: %+v\n", marshalledMsg)
-	fmt.Println(len(marshalledMsg))
-
 	if _, err := conn.Write(marshalledMsg); err != nil {
 		return fmt.Errorf("goswu: sending install request: %w", err)
 	}
@@ -94,19 +89,6 @@ func (s *Socket) Install(req *Request) error {
 	if err := resp.Unmarshal(conn); err != nil {
 		return err
 	}
-
-	data := bytes.TrimRight(resp.data[:], "\x00")
-	var typName string
-	switch resp.typ {
-	case msgACK:
-		typName = "ACK"
-	case msgNACK:
-		typName = "NACK"
-	default:
-		typName = "UNKNOWN"
-	}
-	fmt.Printf("swupdate response: magic=0x%x type=%d (%s) dataLen=%d data=%q\n",
-		resp.magic, resp.typ, typName, len(data), data)
 
 	switch resp.typ {
 	case msgNACK:
@@ -122,7 +104,6 @@ func (s *Socket) Install(req *Request) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
